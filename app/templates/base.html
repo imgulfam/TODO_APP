@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}TaskHub{% endblock %} - TaskHub</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>TaskHub</h1>
+            <nav>
+                {% if session.get('user_id') %}
+                    <a href="{{ url_for('task.view_tasks') }}">Home</a>
+                    <div class="profile-dropdown">
+                        <div class="profile-icon" onclick="toggleDropdown()">
+                            {{ session.get('name')[0] | upper }}
+                        </div>
+                        <div class="dropdown-content" id="profileDropdown">
+                            <div class="dropdown-header">
+                                <strong>{{ session.get('name') }}</strong>
+                                <small>{{ session.get('email') }}</small>
+                            </div>
+                            <a href="{{ url_for('auth.logout') }}">Logout</a>
+                        </div>
+                    </div>
+                {% else %}
+                    {% if request.endpoint not in ['auth.login', 'auth.register'] %}
+                        <a href="{{ url_for('auth.login') }}">Login</a>
+                        <a href="{{ url_for('auth.register') }}">Register</a>
+                    {% endif %}
+                {% endif %}
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        {% with messages = get_flashed_messages(with_categories=True) %}
+            {% if messages %}
+                <div class="container">
+                    {% for category, message in messages %}
+                        <div class="flash {{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="footer-fixed">
+        <div class="container">
+            <p>&copy; 2025 TaskHub</p>
+        </div>
+    </footer>
+
+    <!-- Link the new JavaScript file -->
+    <script src="{{ url_for('static', filename='js/script.js') }}" defer></script>
+    
+    <!-- This script remains for the dropdown -->
+    <script>
+        {% if session.get('user_id') %}
+        function toggleDropdown() {
+            document.getElementById("profileDropdown").classList.toggle("show");
+        }
+        window.onclick = function(event) {
+            if (!event.target.matches('.profile-icon')) {
+                var dropdowns = document.getElementsByClassName("dropdown-content");
+                for (var i = 0; i < dropdowns.length; i++) {
+                    var openDropdown = dropdowns[i];
+                    if (openDropdown.classList.contains('show')) {
+                        openDropdown.classList.remove('show');
+                    }
+                }
+            }
+        }
+        {% endif %}
+    </script>
+</body>
+</html>

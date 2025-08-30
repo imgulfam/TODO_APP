@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+{% block title %}Your Tasks{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="task-box">
+        <div class="task-box-header">
+            <h2>Your Tasks</h2>
+            <div class="user-name">
+                <strong>{{ session.get('name') }}</strong>
+            </div>
+        </div>
+
+        <!-- Add an ID to the form -->
+        <form id="add-task-form" action="{{ url_for('task.add_task') }}" method="POST" class="task-form">
+            <div class="form-inputs">
+                <input type="text" name="title" placeholder="Add a new task title..." required>
+                <textarea name="description" placeholder="Add a description (optional)..."></textarea>
+            </div>
+            <div class="form-actions">
+                <label for="deadline-input" class="btn-deadline">Set Deadline 📅</label>
+                <input type="datetime-local" name="deadline" id="deadline-input" class="hidden-input">
+                <button type="submit" class="btn">Add Task</button>
+            </div>
+        </form>
+
+        {% if tasks %}
+        <!-- Add an ID to the form -->
+        <form id="clear-tasks-form" method="POST" action="{{ url_for('task.clear_tasks') }}" onsubmit="return confirm('Are you sure you want to delete all tasks? This action cannot be undone.');">
+            <button type="submit" class="btn btn-clear">Clear All Tasks</button>
+        </form>
+
+        <br>
+        <table class="task-table">
+            <thead>
+                <tr>
+                    <th style="width: 5%;">#</th>
+                    <th class="task-title">Task</th>
+                    <th class="task-status">Status</th>
+                    <th class="task-created">Created On</th>
+                    <th class="task-deadline">Deadline</th>
+                    <th class="task-actions">Actions</th>
+                </tr>
+            </thead>
+            <!-- Add an ID to the table body -->
+            <tbody id="task-list">
+                {% for task in tasks %}
+                    {% set task_class = '' %}
+                    {% if task.deadline and task.deadline.date() < today %}
+                        {% set task_class = 'overdue' %}
+                    {% elif task.deadline and task.deadline.date() == today %}
+                        {% set task_class = 'due-today' %}
+                    {% endif %}
+                <tr class="task-row {{ task_class }}" data-task-id="{{ task.id }}" onclick="toggleDescriptionRow(this)">
+                    <td data-label="#">{{ loop.index }}</td>
+                    <td data-label="Task" class="task-title">{{ task.title }}</td>
+                    <td data-label="Status" class="task-status">
+                        <span class="badge {{ task.status|lower }}">{{ task.status }}</span>
+                    </td>
+                    <td data-label="Created On" class="task-created">
+                        <div>
+                            {{ task.created_at.strftime('%I:%M %p') }}
+                            <br>
+                            <small class="date-secondary">{{ task.created_at.strftime('%d %b %Y') }}</small>
+                        </div>
+                    </td>
+                    <td data-label="Deadline" class="task-deadline">
+                        <div class="deadline-display" onclick="toggleEdit(event, 'deadline', {{ task.id }})" style="cursor: pointer;" title="Click to edit deadline">
+                            {% if task.deadline %}
+                                <div>
+                                    {{ task.deadline.strftime('%I:%M %p') }}
+                                    <br>
+                                    <small class="date-secondary">{{ task.deadline.strftime('%d %b %Y') }}</small>
+                                </div>
+                            {% else %}
+                                <span style="color: #888;">None</span>
+                            {% endif %}
+                        </div>
+                        <form class="deadline-edit-form" action="{{ url_for('task.update_deadline', task_id=task.id) }}" method="POST" style="display: none;" onclick="event.stopPropagation()">
+                            <input type="datetime-local" name="new_deadline" value="{{ task.deadline.strftime('%Y-%m-%dT%H:%M') if task.deadline else '' }}">
+                            <button type="submit" class="btn-small">Save</button>
+                            <button type="button" class="btn-small btn-danger" onclick="toggleEdit(event, 'deadline', {{ task.id }})">Cancel</button>
+                        </form>
+                    </td>
+                    <td data-label="Actions" class="task-actions" onclick="event.stopPropagation()">
+                        <form action="{{ url_for('task.toggle_status', task_id=task.id) }}" method="POST" style="display:inline;">
+                            <button class="btn-small" type="submit">Next</button>
+                        </form>
+                        <form action="{{ url_for('task.delete_task', task_id=task.id) }}" method="POST" style="display:inline;">
+                            <button class="btn-small btn-danger" type="submit">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                <tr class="description-row">
+                    <td colspan="6">
+                        <div class="description-content">
+                            <div class="description-display">
+                                <strong>Description:</strong>
+                                <p>{{ task.description if task.description else 'No description provided.' }}</p>
+                                <button class="btn-small" onclick="toggleEdit(event, 'description', {{ task.id }})">Edit</button>
+                            </div>
+                            <form class="description-edit-form" action="{{ url_for('task.update_description', task_id=task.id) }}" method="POST" style="display: none;">
+                                <textarea name="new_description" class="description-textarea">{{ task.description }}</textarea>
+                                <div>
+                                    <button type="submit" class="btn-small">Save</button>
+                                    <button type="button" class="btn-small btn-danger" onclick="toggleEdit(event, 'description', {{ task.id }})">Cancel</button>
+                                </div>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p id="no-tasks-message" style="text-align: center; color: var(--gray-dark); padding: 20px;">No tasks yet. Add one above to get started!</p>
+        {% endif %}
+    </div>
+</div>
+
+<!-- This is YOUR working script block, I have not changed it -->
+<script>
+    document.querySelector('.btn-deadline').addEventListener('click', function() {
+        const input = document.getElementById('deadline-input');
+        if (input.showPicker) {
+            input.showPicker();
+        } else {
+            input.click();
+        }
+    });
+
+    function toggleDescriptionRow(rowElement) {
+        const descriptionRow = rowElement.nextElementSibling;
+        if (descriptionRow && descriptionRow.classList.contains('description-row')) {
+            descriptionRow.classList.toggle('visible');
+        }
+    }
+
+    function toggleEdit(event, type, taskId) {
+        event.stopPropagation();
+        const parentCell = event.target.closest('td');
+        const displayDiv = parentCell.querySelector(`.${type}-display`);
+        const form = parentCell.querySelector(`.${type}-edit-form`);
+        if (displayDiv && form) {
+            displayDiv.style.display = displayDiv.style.display === 'none' ? 'block' : 'none';
+            form.style.display = form.style.display === 'none' ? 'flex' : 'none';
+        }
+    }
+</script>
+{% endblock %}

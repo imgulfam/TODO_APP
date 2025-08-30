@@ -1,0 +1,14 @@
+# Flask
+# Flask-SQLAlchemy
+# Flask-Migrate
+# python-dotenv
+# psycopg2-binary # Driver for PostgreSQL
+# gunicorn # For production deployment
+
+Flask
+Flask-SQLAlchemy
+Flask-Migrate
+python-dotenv
+psycopg2-binary
+Werkzeug
+gunicorn
