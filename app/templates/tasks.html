@@ -11,7 +11,7 @@
             </div>
         </div>
 
-        <!-- Add an ID to the form -->
+        <!-- Add Task Form -->
         <form id="add-task-form" action="{{ url_for('task.add_task') }}" method="POST" class="task-form">
             <div class="form-inputs">
                 <input type="text" name="title" placeholder="Add a new task title..." required>
@@ -19,13 +19,12 @@
             </div>
             <div class="form-actions">
                 <label for="deadline-input" class="btn-deadline">Set Deadline 📅</label>
-                <input type="datetime-local" name="deadline" id="deadline-input" class="hidden-input">
+                <input type="datetime-local" name="deadline" id="deadline-input" class="hidden-input" min="{{ now.strftime('%Y-%m-%dT%H:%M') }}">
                 <button type="submit" class="btn">Add Task</button>
             </div>
         </form>
 
         {% if tasks %}
-        <!-- Add an ID to the form -->
         <form id="clear-tasks-form" method="POST" action="{{ url_for('task.clear_tasks') }}" onsubmit="return confirm('Are you sure you want to delete all tasks? This action cannot be undone.');">
             <button type="submit" class="btn btn-clear">Clear All Tasks</button>
         </form>
@@ -42,7 +41,6 @@
                     <th class="task-actions">Actions</th>
                 </tr>
             </thead>
-            <!-- Add an ID to the table body -->
             <tbody id="task-list">
                 {% for task in tasks %}
                     {% set task_class = '' %}
@@ -51,11 +49,28 @@
                     {% elif task.deadline and task.deadline.date() == today %}
                         {% set task_class = 'due-today' %}
                     {% endif %}
-                <tr class="task-row {{ task_class }}" data-task-id="{{ task.id }}" onclick="toggleDescriptionRow(this)">
+                <tr class="task-row {{ task_class }}" data-task-id="{{ task.id }}" onclick="toggleRow(this)">
                     <td data-label="#">{{ loop.index }}</td>
-                    <td data-label="Task" class="task-title">{{ task.title }}</td>
+
+                    <!-- Task title + inline deadline (for mobile only) -->
+                    <td data-label="Task" class="task-title">
+                        {{ task.title }}
+                        {% if task.deadline %}
+                            <small class="mobile-deadline">
+                                Due on: {{ task.deadline.strftime('%d %b %Y %I:%M %p') }}
+                            </small>
+                        {% else %}
+                            <small class="mobile-deadline" style="color: #888;">No deadline</small>
+                        {% endif %}
+                    </td>
+
+                    <!-- Hidden until expanded -->
                     <td data-label="Status" class="task-status">
-                        <span class="badge {{ task.status|lower }}">{{ task.status }}</span>
+                        {% if task.deadline and task.deadline.date() < today %}
+                            <span class="badge overdue">Overdue</span>
+                        {% else %}
+                            <span class="badge {{ task.status|lower }}">{{ task.status }}</span>
+                        {% endif %}
                     </td>
                     <td data-label="Created On" class="task-created">
                         <div>
@@ -84,13 +99,19 @@
                     </td>
                     <td data-label="Actions" class="task-actions" onclick="event.stopPropagation()">
                         <form action="{{ url_for('task.toggle_status', task_id=task.id) }}" method="POST" style="display:inline;">
-                            <button class="btn-small" type="submit">Next</button>
+                            {% if task.deadline and task.deadline.date() < today %}
+                                <button class="btn-small" type="submit" disabled title="Task overdue — cannot change status">Next</button>
+                            {% else %}
+                                <button class="btn-small" type="submit">Next</button>
+                            {% endif %}
                         </form>
                         <form action="{{ url_for('task.delete_task', task_id=task.id) }}" method="POST" style="display:inline;">
                             <button class="btn-small btn-danger" type="submit">Delete</button>
                         </form>
                     </td>
                 </tr>
+
+                <!-- Expandable row content (Description now inside same card) -->
                 <tr class="description-row">
                     <td colspan="6">
                         <div class="description-content">
@@ -118,7 +139,6 @@
     </div>
 </div>
 
-<!-- This is YOUR working script block, I have not changed it -->
 <script>
     document.querySelector('.btn-deadline').addEventListener('click', function() {
         const input = document.getElementById('deadline-input');
@@ -129,7 +149,8 @@
         }
     });
 
-    function toggleDescriptionRow(rowElement) {
+    function toggleRow(rowElement) {
+        rowElement.classList.toggle('expanded');
         const descriptionRow = rowElement.nextElementSibling;
         if (descriptionRow && descriptionRow.classList.contains('description-row')) {
             descriptionRow.classList.toggle('visible');
@@ -147,4 +168,23 @@
         }
     }
 </script>
+
+<style>
+/* Hide inline deadline in desktop view */
+@media (min-width: 768px) {
+    .mobile-deadline {
+        display: none;
+    }
+}
+
+/* Show inline deadline under title in mobile */
+@media (max-width: 767px) {
+    .mobile-deadline {
+        display: block;
+        color: var(--gray-dark);
+        font-size: 0.85em;
+        margin-top: 2px;
+    }
+}
+</style>
 {% endblock %}

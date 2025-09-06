@@ -1,4 +1,31 @@
-/* --- Theme Variables --- */
+/* ============================================================
+   style.css — cleaned & organized version
+   - Keep same colors / layout as original
+   - Sections / comments added for maintainability
+   - No changes to class names expected by HTML/JS
+   ============================================================ */
+
+/* =========================
+   TABLE OF CONTENTS
+   1.   Theme variables
+   2.   Base / typography
+   3.   Layout / containers / header / nav
+   4.   Profile dropdown
+   5.   Auth forms
+   6.   Task box & header
+   7.   Task form (add task)
+   8.   Buttons
+   9.   Task table (desktop)
+   10.  Description row & edit form
+   11.  Badges / flash messages / footer
+   12.  Responsive: Mobile styles (compact view)
+   13.  Mobile expanded view helpers & labels
+   14.  Small overrides / fixes
+   ========================= */
+
+/* =========================
+   1. Theme variables
+   ========================= */
 :root {
     --primary-color: #007bff;
     --primary-hover: #0056b3;
@@ -13,9 +40,16 @@
     --font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-/* Base */
-body {
+/* =========================
+   2. Base / typography
+   ========================= */
+* { box-sizing: border-box; }
+html, body {
     margin: 0;
+    padding: 0;
+    height: 100%;
+}
+body {
     font-family: var(--font-family);
     background-color: #f0f2f5;
     color: var(--text-color);
@@ -24,18 +58,18 @@ body {
     flex-direction: column;
     min-height: 100vh;
 }
+main { flex-grow: 1; }
 
-main {
-    flex-grow: 1;
-}
-
+/* Container */
 .container {
-    max-width: 950px;
+    max-width: 1100px;
     margin: auto;
     padding: 20px;
 }
 
-/* Header */
+/* =========================
+   3. Layout / Header / Nav
+   ========================= */
 header {
     background: white;
     color: var(--text-color);
@@ -43,25 +77,21 @@ header {
     border-bottom: 1px solid var(--gray-light);
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
-
 header .container {
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
-
 header h1 {
     margin: 0;
     font-size: 28px;
     color: var(--primary-color);
     font-weight: 700;
 }
-
 nav {
     display: flex;
     align-items: center;
 }
-
 nav a {
     color: var(--gray-dark);
     text-decoration: none;
@@ -69,17 +99,12 @@ nav a {
     font-weight: 600;
     transition: color 0.2s ease;
 }
+nav a:hover { color: var(--primary-color); }
 
-nav a:hover {
-    color: var(--primary-color);
-}
-
-/* Profile Dropdown */
-.profile-dropdown {
-    position: relative;
-    display: inline-block;
-}
-
+/* =========================
+   4. Profile dropdown
+   ========================= */
+.profile-dropdown { position: relative; display: inline-block; }
 .profile-icon {
     width: 40px;
     height: 40px;
@@ -96,11 +121,7 @@ nav a:hover {
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     transition: transform 0.2s ease;
 }
-
-.profile-icon:hover {
-    transform: scale(1.1);
-}
-
+.profile-icon:hover { transform: scale(1.1); }
 .dropdown-content {
     display: none;
     position: absolute;
@@ -113,26 +134,10 @@ nav a:hover {
     border-radius: 8px;
     overflow: hidden;
 }
-
-.dropdown-content.show {
-    display: block;
-}
-
-.dropdown-header {
-    padding: 12px 16px;
-    border-bottom: 1px solid var(--gray-light);
-}
-
-.dropdown-header strong {
-    display: block;
-    font-size: 16px;
-}
-
-.dropdown-header small {
-    color: var(--gray-dark);
-    font-size: 12px;
-}
-
+.dropdown-content.show { display: block; }
+.dropdown-header { padding: 12px 16px; border-bottom: 1px solid var(--gray-light); }
+.dropdown-header strong { display: block; font-size: 16px; }
+.dropdown-header small { color: var(--gray-dark); font-size: 12px; }
 .dropdown-content a {
     color: var(--text-color);
     padding: 12px 16px;
@@ -141,95 +146,54 @@ nav a:hover {
     margin: 0;
     font-weight: 500;
 }
+.dropdown-content a:hover { background-color: var(--gray-lightest); }
 
-.dropdown-content a:hover {
-    background-color: var(--gray-lightest);
-}
-
-/* Auth Form */
-.auth-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 40px 20px;
-}
-
+/* =========================
+   5. Auth forms
+   ========================= */
+.auth-container { display:flex; justify-content:center; align-items:center; padding:40px 20px; }
 .auth-box {
     width: 100%;
     max-width: 400px;
     padding: 40px;
     background-color: white;
     border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
 }
-
 .auth-box h2 {
     text-align: center;
-    margin-top: 0;
-    margin-bottom: 30px;
+    margin: 0 0 30px 0;
     font-size: 28px;
     color: var(--text-color);
 }
-
-.form-group {
-    margin-bottom: 20px;
-}
-
+.form-group { margin-bottom: 20px; }
 .form-group label {
-    font-weight: 600;
-    font-size: 14px;
-    margin-bottom: 8px;
-    display: block;
-    color: var(--gray-dark);
+    font-weight: 600; font-size: 14px; margin-bottom: 8px; display:block; color:var(--gray-dark);
 }
-
 .form-group input {
-    width: 100%;
-    padding: 12px 15px;
-    font-size: 16px;
-    border-radius: 8px;
-    border: 1px solid var(--gray-medium);
+    width: 100%; padding:12px 15px; font-size:16px; border-radius:8px; border:1px solid var(--gray-medium);
     transition: border-color 0.2s, box-shadow 0.2s;
 }
-
 .form-group input:focus {
     outline: none;
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2);
+    box-shadow: 0 0 0 3px rgba(0,123,255,0.2);
 }
+.auth-box .btn { width: 100%; padding:14px; font-size:16px; font-weight:600; margin-top:10px; }
+.auth-box p { text-align:center; margin-top:20px; color:var(--gray-dark); }
+.auth-box p a { color:var(--primary-color); font-weight:600; text-decoration:none; }
+.auth-box p a:hover { text-decoration:underline; }
 
-.auth-box .btn {
-    width: 100%;
-    padding: 14px;
-    font-size: 16px;
-    font-weight: 600;
-    margin-top: 10px;
-}
-
-.auth-box p {
-    text-align: center;
-    margin-top: 20px;
-    color: var(--gray-dark);
-}
-
-.auth-box p a {
-    color: var(--primary-color);
-    font-weight: 600;
-    text-decoration: none;
-}
-.auth-box p a:hover {
-    text-decoration: underline;
-}
-
-/* Main Task Box */
+/* =========================
+   6. Task box & header
+   ========================= */
 .task-box {
     margin: 40px auto;
     background: white;
     padding: 30px;
     border-radius: 16px;
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.08);
 }
-
 .task-box-header {
     display: flex;
     justify-content: space-between;
@@ -238,60 +202,27 @@ nav a:hover {
     padding-bottom: 15px;
     border-bottom: 1px solid var(--gray-light);
 }
+.task-box-header h2 { margin:0; font-size:24px; }
+.task-box-header .user-name { font-weight:600; color:var(--gray-dark); }
 
-.task-box-header h2 {
-    margin: 0;
-    font-size: 24px;
-}
-
-.task-box-header .user-name {
-    font-weight: 600;
-    color: var(--gray-dark);
-}
-
-/* Task Form */
+/* =========================
+   7. Task form (add task)
+   ========================= */
 .task-form {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    margin-bottom: 25px;
+    display:flex;
+    flex-direction:column;
+    gap:15px;
+    margin-bottom:25px;
 }
-
-.form-inputs {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+.form-inputs { display:flex; flex-direction:column; gap:10px; }
+.form-actions { display:flex; justify-content:flex-end; align-items:center; gap:10px; }
+.task-form input[type="text"], .task-form textarea {
+    width:100%; box-sizing:border-box; padding:12px 15px; font-size:16px; border:1px solid var(--gray-medium);
+    border-radius:8px; transition:border-color 0.2s, box-shadow 0.2s; font-family:var(--font-family);
 }
-
-.form-actions {
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    gap: 10px;
-}
-
-.task-form input[type="text"],
-.task-form textarea {
-    width: 100%;
-    box-sizing: border-box;
-    padding: 12px 15px;
-    font-size: 16px;
-    border: 1px solid var(--gray-medium);
-    border-radius: 8px;
-    transition: border-color 0.2s, box-shadow 0.2s;
-    font-family: var(--font-family);
-}
-
-.task-form textarea {
-    resize: vertical;
-    min-height: 80px;
-}
-
-.task-form input[type="text"]:focus,
-.task-form textarea:focus {
-    outline: none;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2);
+.task-form textarea { resize:vertical; min-height:80px; }
+.task-form input[type="text"]:focus, .task-form textarea:focus {
+    outline:none; border-color:var(--primary-color); box-shadow:0 0 0 3px rgba(0,123,255,0.2);
 }
 
 .btn-deadline {
@@ -304,24 +235,16 @@ nav a:hover {
     transition: background-color 0.2s ease;
     display: inline-block;
 }
-
-.btn-deadline:hover {
-    background-color: #333;
-}
+.btn-deadline:hover { background-color: #333; }
 
 .hidden-input {
-    position: absolute !important;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border: 0;
+    position:absolute !important;
+    width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0;
 }
 
-/* Buttons */
+/* =========================
+   8. Buttons
+   ========================= */
 .btn {
     background-color: var(--primary-color);
     color: white;
@@ -333,141 +256,51 @@ nav a:hover {
     cursor: pointer;
     transition: background-color 0.2s ease, transform 0.1s ease;
 }
-
-.btn:hover {
-    background-color: var(--primary-hover);
-    transform: translateY(-2px);
-}
-
-.btn:active {
-    transform: translateY(0);
-}
-
-.btn-clear {
-    background-color: var(--danger-color);
-    margin-bottom: 15px;
-}
-
-.btn-clear:hover {
-    background-color: var(--danger-hover);
-}
+.btn:hover { background-color: var(--primary-hover); transform: translateY(-2px); }
+.btn:active { transform: translateY(0); }
+.btn-clear { background-color: var(--danger-color); margin-bottom:15px; }
+.btn-clear:hover { background-color: var(--danger-hover); }
 
 .btn-small {
-    font-size: 15px;
-    padding: 8px 16px;
-    background-color: var(--gray-dark);
-    color: white;
-    border-radius: 6px;
-    cursor: pointer;
+    font-size: 15px; padding:8px 16px; background-color: var(--gray-dark); color:white; border-radius:6px; cursor:pointer;
     transition: all 0.2s ease;
 }
+.btn-small:hover { background-color:#333; transform: scale(1.05); }
+.btn-danger { background-color: var(--danger-color); }
+.btn-danger:hover { background-color: var(--danger-hover); }
 
-.btn-small:hover {
-    background-color: #333;
-    transform: scale(1.05);
-}
-
-.btn-danger {
-    background-color: var(--danger-color);
-}
-.btn-danger:hover {
-    background-color: var(--danger-hover);
-}
-
-/* Task Table */
-.task-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
+/* =========================
+   9. Task table (desktop)
+   ========================= */
+.task-table { width:100%; border-collapse:collapse; font-size:16px; }
 .task-table th {
-    text-align: left;
-    padding: 14px 8px;
-    background-color: var(--gray-lightest);
-    color: var(--gray-dark);
-    font-size: 12px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    text-align:left; padding:14px 8px; background-color:var(--gray-lightest); color:var(--gray-dark);
+    font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:0.5px;
 }
-
 .task-table td {
-    padding: 18px 10px;
-    border-bottom: 1px solid var(--gray-light);
-    vertical-align: middle;
-    font-size: 16px;
+    padding:18px 10px; border-bottom:1px solid var(--gray-light); vertical-align: middle;
+    vertical-align: middle; /* ensure consistent centering across browsers */
 }
+.task-table tbody tr:last-child td { border-bottom:none; }
 
-.task-table tbody tr:last-child td {
-    border-bottom: none;
-}
+.task-table tbody tr.task-row { cursor:pointer; transition: background-color 0.2s ease; }
+.task-table tbody tr.task-row:hover { background-color: var(--gray-lightest); }
 
-.task-table tbody tr.task-row {
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-}
+/* Make sure the task-title stacks nicely when it needs to */
+.task-title { font-weight:500; }
 
-.task-table tbody tr.task-row:hover {
-    background-color: var(--gray-lightest);
-}
+/* date-secondary small text */
+.date-secondary { color: var(--gray-dark); font-size:0.9em; }
 
-.description-row {
-    display: none;
-}
-.description-row.visible {
-    display: table-row;
-}
-.description-row td {
-    background-color: var(--gray-lightest);
-    padding: 20px;
-}
-.description-content p {
-    margin-top: 5px;
-    color: var(--gray-dark);
-    white-space: pre-wrap;
-}
-.description-edit-form {
-    display: none;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
-}
-
-.description-edit-form .description-textarea {
-    width: 100%;
-    box-sizing: border-box;
-    padding: 10px 15px;
-    font-size: 16px;
-    border: 1px solid var(--gray-medium);
-    border-radius: 8px;
-    resize: vertical;
-    min-height: 100px;
-    font-family: var(--font-family);
-}
-.description-edit-form .description-textarea:focus {
-    outline: none;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2);
-}
-.description-edit-form div {
-    display: flex;
-    gap: 10px;
-}
-
-
-.task-title {
-    font-weight: 500;
-}
-
-.date-secondary {
-    color: var(--gray-dark);
-    font-size: 0.9em;
-}
-
-/* Deadline Highlighting */
+/* Deadline highlighting */
 .task-row.overdue {
-    background-color: rgba(220, 53, 69, 0.05);
-    border-left: 4px solid var(--danger-color);
+    background-color: #ffe5e5;   /* lighter soft red */
+    border-left: 4px solid #ff7b7b; /* softer border red */
+}
+.task-row.overdue .task-title,
+.task-row.overdue .date-secondary {
+    color: #cc0000;  /* readable but not too dark */
+    font-weight: 600;
 }
 
 .task-row.due-today {
@@ -475,113 +308,231 @@ nav a:hover {
     border-left: 4px solid var(--warning-color);
 }
 
-/* Badge Styles */
-.badge {
-    padding: 6px 14px;
-    border-radius: 15px;
-    font-weight: 600;
-    font-size: 14px;
-    color: white;
-    display: inline-block;
-}
-
-.badge.pending { background-color: #ffc107; }
+/* Badge styles */
+.badge { padding:6px 14px; border-radius:15px; font-weight:600; font-size:14px; color:white; display:inline-block; }
+.badge.pending { background-color: #ffc107; color:#000; }
 .badge.working { background-color: #17a2b8; }
 .badge.done { background-color: #28a745; }
-
-/* Flash Messages */
-.flash {
-    padding: 15px 20px;
-    margin-bottom: 20px;
-    border-radius: 8px;
-    font-weight: 500;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+.badge.overdue {
+    background-color: var(--danger-color);
+    color: #fff;
+    font-weight: 700;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
-.flash.success { background-color: #d4edda; color: #155724; }
-.flash.danger { background-color: #f8d7da; color: #721c24; }
-.flash.info   { background-color: #d1ecf1; color: #0c5460; }
 
-/* Footer */
-.footer-fixed {
-    background-color: #343a40;
-    color: #ccc;
-    padding: 15px 0;
-    text-align: center;
-    font-size: 14px;
+
+/* =========================
+   10. Description row & edit form
+   ========================= */
+.description-row { display:none; }
+.description-row.visible { display: table-row; }
+.description-row td { background-color: var(--gray-lightest); padding:20px; }
+.description-content p { margin-top:5px; color:var(--gray-dark); white-space:pre-wrap; }
+.description-edit-form {
+    display:none; flex-direction:column; align-items:flex-start; gap:10px;
 }
+.description-edit-form .description-textarea {
+    width:100%; box-sizing:border-box; padding:10px 15px; font-size:16px; border:1px solid var(--gray-medium);
+    border-radius:8px; resize:vertical; min-height:100px; font-family:var(--font-family);
+}
+.description-edit-form .description-textarea:focus {
+    outline:none; border-color:var(--primary-color); box-shadow:0 0 0 3px rgba(0,123,255,0.2);
+}
+.description-edit-form div { display:flex; gap:10px; }
 
-/* ==============================================
---- NEW: RESPONSIVE STYLES FOR MOBILE ---
-==============================================
-*/
+/* =========================
+   11. Flash messages / footer
+   ========================= */
+.flash { padding:15px 20px; margin-bottom:20px; border-radius:8px; font-weight:500; box-shadow:0 2px 4px rgba(0,0,0,0.1); }
+.flash.success { background-color:#d4edda; color:#155724; }
+.flash.danger { background-color:#f8d7da; color:#721c24; }
+.flash.info   { background-color:#d1ecf1; color:#0c5460; }
+
+.footer-fixed { background-color:#343a40; color:#ccc; padding:15px 0; text-align:center; font-size:14px; }
+
+/* =========================
+   12. Responsive: Mobile (compact view)
+   - Compact list view for mobile
+   - Title stacks, show mobile-deadline inline
+   ========================= */
 @media (max-width: 768px) {
-    .container, .task-box { padding: 15px; }
-    header h1 { font-size: 22px; }
-    
-    .task-box { 
-        margin: 20px 10px;
-        padding: 20px;
+    .container, .task-box { padding:15px; }
+    header h1 { font-size:22px; }
+
+    .task-box { margin:20px 10px; padding:20px; }
+
+    .form-actions {
+        display:grid; grid-template-columns:1fr 1fr; gap:10px;
     }
 
-    .form-actions { 
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 10px;
-    }
-    
     .btn-deadline, .form-actions .btn {
-        width: 100%;
-        box-sizing: border-box;
-        padding: 12px 10px;
-        font-size: 14px;
-        font-weight: 600;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        text-align: center;
+        width:100%; box-sizing:border-box; padding:12px 10px; font-size:14px; font-weight:600;
+        box-shadow:0 2px 4px rgba(0,0,0,0.1); text-align:center;
     }
 
-    .task-form input[type="text"], .task-form textarea {
-        box-shadow: 0 1px 2px rgba(0,0,0,0.05) inset;
-    }
-    
-    .btn-clear {
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-    
-    /* --- THIS IS THE NEW COMPACT LIST VIEW --- */
-    .task-table thead, 
-    .task-table .task-created, 
-    .task-table .task-deadline, 
-    .task-table .task-actions,
-    .task-table td[data-label="#"] {
-        display: none; /* Hide all columns except title and status */
+    .task-form input[type="text"], .task-form textarea { box-shadow:0 1px 2px rgba(0,0,0,0.05) inset; }
+    .btn-clear { box-shadow:0 2px 4px rgba(0,0,0,0.1); }
+
+    /* Compact list view for mobile:
+       - hide table header and the index column #
+       - keep the title cell visible (which also contains the inline deadline)
+       - keep the status badge visible on the right
+       - hide Created On / Deadline column / Actions until expansion
+    */
+    .task-table thead,
+    .task-table td[data-label="#"],
+    .task-table td.task-created,
+    .task-table td.task-deadline,
+    .task-table td.task-actions {
+        display: none;
     }
 
     .task-table tr.task-row {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 15px;
-        margin-bottom: 10px;
-        border: 1px solid var(--gray-light);
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        display:flex; align-items:center; justify-content:space-between;
+        padding:15px; margin-bottom:10px; border:1px solid var(--gray-light); border-radius:8px;
+        box-shadow:0 2px 4px rgba(0,0,0,0.05); background: white;
+    }
+    /* ✅ Force overdue tasks to keep red background in mobile */
+    .task-table tr.task-row.overdue {
+        background-color: #ffe5e5 !important;   /* same light red as desktop */
+        border-left: 4px solid #ff7b7b;        /* keep red border */
     }
 
     .task-table td {
-        display: inline; /* Let them flow like text */
-        padding: 0;
-        border: none;
+        display:inline; padding:0; border:none;
     }
 
+    /* Title stacks in mobile */
     .task-table td.task-title {
-        font-weight: 600;
+        font-weight:600;
+        display:flex; flex-direction:column; gap:6px; flex:1 1 auto;
     }
 
-    /* Keep the expanded description view the same */
-    .description-row td {
+    /* show mobile inline deadline */
+    .mobile-deadline { display:block; color:var(--gray-dark); font-size:0.85em; margin-top:2px; }
+
+    /* keep status badge aligned to the right */
+    .task-table td.task-status { margin-left:12px; flex:0 0 auto; }
+
+    /* expanded hidden columns shown under card when .expanded set */
+    .task-row.expanded td.task-created,
+    .task-row.expanded td.task-deadline,
+    .task-row.expanded td.task-actions,
+    .task-row.expanded td[data-label="#"] {
+        display:block; width:100%; padding:10px 0; border-top:1px solid var(--gray-light);
+    }
+
+    .task-row.expanded td.task-status { display:block; }
+
+    /* expanded description */
+    .description-row td { display:block; padding:15px; border-top:1px solid var(--gray-light); }
+}
+
+/* =========================
+   13. Mobile expanded view helpers & labels
+   ========================= */
+@media (max-width: 768px) {
+    .task-row.expanded {
+        flex-direction:column; align-items:flex-start;
+    }
+    .task-row.expanded td {
+        display:block; width:100%; padding:8px 0;
+    }
+    .task-row.expanded td.task-title {
+        font-weight:600; margin-bottom:8px;
+    }
+    .task-row.expanded td.task-status { margin:5px 0; }
+    .task-row.expanded td.task-actions {
+        display:flex; gap:10px; margin-top:10px;
+    }
+    .task-row.expanded td.task-created,
+    .task-row.expanded td.task-deadline {
+        font-size:14px; color:var(--gray-dark);
+    }
+
+    .task-row.expanded td.task-created::before {
+        content: "Created On: ";
+        font-weight: 600;
         display: block;
-        padding: 15px;
-        border-top: 1px solid var(--gray-light);
+        margin-bottom: 3px;
+        color: var(--gray-dark);
+    }
+    .task-row.expanded td.task-deadline::before {
+        content: "Deadline: ";
+        font-weight: 600;
+        display: block;
+        margin-bottom: 3px;
+        color: var(--gray-dark);
+    }
+    .task-row.expanded td.task-actions::before {
+        content: "Actions: ";
+        font-weight: 600;
+        display: block;
+        margin-bottom: 5px;
+        color: var(--gray-dark);
+    }
+}
+
+/* =========================
+   14. Small overrides / fixes
+   - Desktop force: ensure .task-title doesn't act like flex item
+   - This preserves mobile stacking while aligning desktop cell center
+   ========================= */
+@media (min-width: 769px) {
+    .task-table th,
+    .task-table td {
+        vertical-align: middle !important;
+    }
+    .task-table td.task-title {
+        /* On desktop, behave like a table cell to align with others */
+        display: table-cell !important;
+        vertical-align: middle !important;
+        /* Keep padding similar to other cells */
+        padding-top: 18px !important;
+        padding-bottom: 18px !important;
+    }
+    .task-table td.task-status,
+    .task-table td.task-created,
+    .task-table td.task-deadline,
+    .task-table td.task-actions {
+        vertical-align: middle !important;
+    }
+}
+
+/* End of file */
+/* ==============================================
+   EXTRA SMALL SCREENS (max-width: 360px)
+   ============================================== */
+@media (max-width: 360px) {
+    /* Reduce container padding */
+    .container, .task-box {
+        padding: 10px;
+    }
+
+    /* Slightly smaller heading */
+    header h1, .task-box-header h2 {
+        font-size: 18px;
+    }
+
+    /* Compact form buttons */
+    .btn, .btn-deadline, .btn-clear {
+        font-size: 13px;
+        padding: 10px;
+    }
+
+    /* Make table rows tighter */
+    .task-table tr.task-row {
+        padding: 10px;
+    }
+
+    /* Task title smaller to avoid wrapping */
+    .task-table td.task-title {
+        font-size: 14px;
+    }
+
+    /* Description area compact */
+    .description-row td {
+        padding: 10px;
     }
 }

@@ -1,7 +1,9 @@
+
 from flask import Blueprint, redirect, render_template, url_for, session, flash, request, abort, jsonify
 from functools import wraps
 from zoneinfo import ZoneInfo
-from datetime import datetime, date
+from datetime import datetime
+from sqlalchemy import case
 from app import db
 from app.models import Task
 
@@ -22,19 +24,39 @@ def login_required(f):
 @login_required
 def view_tasks():
     local_zone = ZoneInfo("Asia/Kolkata")
-    tasks_from_db = Task.query.filter_by(user_id=session['user_id']).order_by(Task.deadline.asc().nullslast(), Task.created_at.desc()).all()
-    today = datetime.now(local_zone).date()
+    now = datetime.now(local_zone)
+
+    # CASE: upcoming -> 0, no-deadline -> 1, overdue -> 2
+    # pass whens as positional tuple arguments (SQLAlchemy 1.4+/2.x)
+    status_case = case(
+        (Task.deadline == None, 1),
+        (Task.deadline < now, 2),
+        else_=0
+    )
+
+    tasks_from_db = (
+        Task.query.filter_by(user_id=session['user_id'])
+        .order_by(
+            status_case,
+            Task.deadline.asc().nullslast(),
+            Task.created_at.desc()
+        )
+        .all()
+    )
+
+    today = now.date()
     for task in tasks_from_db:
         task.created_at = task.created_at.astimezone(local_zone)
         if task.deadline:
             task.deadline = task.deadline.astimezone(local_zone)
-    return render_template('tasks.html', tasks=tasks_from_db, today=today)
+
+    return render_template('tasks.html', tasks=tasks_from_db, today=today, now=now)
 
 
 @tasks_bp.route('/add', methods=["POST"])
 @login_required
 def add_task():
-    title = request.form.get('title').strip()
+    title = request.form.get('title', '').strip()
     description = request.form.get('description', '').strip()
     deadline_str = request.form.get('deadline')
     
@@ -47,6 +69,13 @@ def add_task():
             naive_deadline = datetime.strptime(deadline_str, '%Y-%m-%dT%H:%M')
             local_zone = ZoneInfo("Asia/Kolkata")
             deadline_local = naive_deadline.replace(tzinfo=local_zone)
+
+            # ✅ NEW: prevent past deadlines
+            now = datetime.now(local_zone)
+            if deadline_local < now:
+                flash("Deadline cannot be in the past.", "danger")
+                return redirect(url_for("task.view_tasks"))
+
         except ValueError:
             return jsonify(success=False, message="Invalid deadline format.")
 
@@ -54,10 +83,27 @@ def add_task():
     db.session.add(new_task)
     db.session.commit()
     
-    # --- MODIFIED --- After adding, get the whole sorted list and send it back
-    all_tasks = Task.query.filter_by(user_id=session['user_id']).order_by(Task.deadline.asc().nullslast(), Task.created_at.desc()).all()
+    # After adding, return the whole sorted list (same ordering logic)
+    now = datetime.now(ZoneInfo("Asia/Kolkata"))
+
+    status_case = case(
+        (Task.deadline == None, 1),
+        (Task.deadline < now, 2),
+        else_=0
+    )
+
+    all_tasks = (
+        Task.query.filter_by(user_id=session['user_id'])
+        .order_by(
+            status_case,
+            Task.deadline.asc().nullslast(),
+            Task.created_at.desc()
+        )
+        .all()
+    )
+
     local_zone = ZoneInfo("Asia/Kolkata")
-    today_str = datetime.now(local_zone).date().isoformat()
+    today_str = now.date().isoformat()
     
     tasks_data = []
     for task in all_tasks:
@@ -90,6 +136,7 @@ def update_description(task_id):
     db.session.commit()
     return jsonify(success=True, message="Description updated.", new_description=new_description)
 
+
 @tasks_bp.route('/update_deadline/<int:task_id>', methods=["POST"])
 @login_required
 def update_deadline(task_id):
@@ -102,7 +149,14 @@ def update_deadline(task_id):
         try:
             naive_deadline = datetime.strptime(new_deadline_str, '%Y-%m-%dT%H:%M')
             local_zone = ZoneInfo("Asia/Kolkata")
-            task.deadline = naive_deadline.replace(tzinfo=local_zone)
+            new_deadline_local = naive_deadline.replace(tzinfo=local_zone)
+
+            # ✅ NEW: prevent updating to past deadline
+            now = datetime.now(local_zone)
+            if new_deadline_local < now:
+                return jsonify(success=False, message="Deadline cannot be set in the past."), 400
+
+            task.deadline = new_deadline_local
             db.session.commit()
             deadline_local_display = task.deadline.astimezone(local_zone)
             return jsonify(
@@ -119,12 +173,20 @@ def update_deadline(task_id):
         return jsonify(success=True, message="Deadline removed.")
 
 
+
 @tasks_bp.route('/toggle/<int:task_id>', methods=["POST"])
 @login_required
 def toggle_status(task_id):
     task = Task.query.get_or_404(task_id)
     if task.owner.id != session['user_id']:
         return jsonify(success=False, message="Unauthorized"), 403
+    
+    # 🚫 Block status change if task is overdue
+    local_zone = ZoneInfo("Asia/Kolkata")
+    now = datetime.now(local_zone)
+    if task.deadline and task.deadline < now:
+        return jsonify(success=False, message="Cannot update status of overdue tasks."), 400
+
     
     if task.status == 'Pending':
         task.status = 'Working'
@@ -135,6 +197,7 @@ def toggle_status(task_id):
     
     db.session.commit()
     return jsonify(success=True, message="Status updated", new_status=task.status)
+
 
 @tasks_bp.route('/delete/<int:task_id>', methods=["POST"])
 @login_required
@@ -147,6 +210,7 @@ def delete_task(task_id):
     db.session.commit()
     return jsonify(success=True, message="Task deleted")
 
+
 @tasks_bp.route('/clear', methods=["POST"])
 @login_required
 def clear_tasks():
@@ -157,5 +221,3 @@ def clear_tasks():
     except Exception as e:
         db.session.rollback()
         return jsonify(success=False, message="An error occurred.")
-
-
