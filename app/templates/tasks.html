@@ -44,7 +44,7 @@
             <tbody id="task-list">
                 {% for task in tasks %}
                     {% set task_class = '' %}
-                    {% if task.deadline and task.deadline.date() < today %}
+                    {% if task.deadline and task.deadline < now %}
                         {% set task_class = 'overdue' %}
                     {% elif task.deadline and task.deadline.date() == today %}
                         {% set task_class = 'due-today' %}
@@ -66,7 +66,7 @@
 
                     <!-- Hidden until expanded -->
                     <td data-label="Status" class="task-status">
-                        {% if task.deadline and task.deadline.date() < today %}
+                        {% if task.deadline and task.deadline < now %}
                             <span class="badge overdue">Overdue</span>
                         {% else %}
                             <span class="badge {{ task.status|lower }}">{{ task.status }}</span>

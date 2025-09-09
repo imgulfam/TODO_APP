@@ -173,24 +173,31 @@ function renderTaskList(tasks, todayStr) {
     let html = '';
     tasks.forEach((task, index) => {
         let task_class = '';
-        if (task.deadline_date) {
-            try {
-                const deadlineDate = new Date(task.deadline_date.replace(' ', ', ')).toISOString().split('T')[0];
-                if (deadlineDate < todayStr) task_class = 'overdue';
-                else if (deadlineDate === todayStr) task_class = 'due-today';
-            } catch (e) {
-                // ignore parse issues
+        if (task.deadline_form_value) {   // ✅ use ISO string from Flask
+            const deadline = new Date(task.deadline_form_value);
+            const now = new Date();
+
+            if (deadline < now) {
+                task_class = 'overdue';
+            } else if (deadline.toDateString() === now.toDateString()) {
+                task_class = 'due-today';
             }
         }
 
-        const descriptionHTML = task.description ? `<p>${task.description.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</p>` : `<p>No description provided.</p>`;
-        const deadlineDisplayHTML = task.deadline_time 
+        const descriptionHTML = task.description
+            ? `<p>${task.description.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</p>`
+            : `<p>No description provided.</p>`;
+        const deadlineDisplayHTML = task.deadline_time
             ? `<div>${task.deadline_time}<br><small class="date-secondary">${task.deadline_date}</small></div>`
             : `<span style="color: #888;">None</span>`;
-        const descriptionTextarea = task.description ? task.description.replace(/</g, "&lt;").replace(/>/g, "&gt;") : '';
+        const descriptionTextarea = task.description
+            ? task.description.replace(/</g, "&lt;").replace(/>/g, "&gt;")
+            : '';
 
         // Mobile inline label string
-        const mobileDueHTML = task.deadline_time ? `Due on: ${task.deadline_date} ${task.deadline_time}` : 'No deadline';
+        const mobileDueHTML = task.deadline_time
+            ? `Due on: ${task.deadline_date} ${task.deadline_time}`
+            : 'No deadline';
 
         html += `
             <tr class="task-row ${task_class}" data-task-id="${task.id}" onclick="toggleRow(this)">
@@ -199,8 +206,12 @@ function renderTaskList(tasks, todayStr) {
                     ${task.title.replace(/</g, "&lt;").replace(/>/g, "&gt;")}
                     <small class="mobile-deadline">${mobileDueHTML}</small>
                 </td>
-                <td data-label="Status" class="task-status"><span class="badge ${task.status.toLowerCase()}">${task.status}</span></td>
-                <td data-label="Created On" class="task-created"><div>${task.created_at_time || ''}${task.created_at_time ? '<br>' : ''}<small class="date-secondary">${task.created_at_date || ''}</small></div></td>
+                <td data-label="Status" class="task-status">
+                    <span class="badge ${task.status.toLowerCase()}">${task.status}</span>
+                </td>
+                <td data-label="Created On" class="task-created">
+                    <div>${task.created_at_time || ''}${task.created_at_time ? '<br>' : ''}<small class="date-secondary">${task.created_at_date || ''}</small></div>
+                </td>
                 <td data-label="Deadline" class="task-deadline">
                     <div class="deadline-display" onclick="toggleEdit(event, 'deadline', ${task.id})" title="Click to edit deadline">${deadlineDisplayHTML}</div>
                     <form class="deadline-edit-form" action="/update_deadline/${task.id}" method="POST" style="display: none;" onclick="event.stopPropagation()">
@@ -210,8 +221,12 @@ function renderTaskList(tasks, todayStr) {
                     </form>
                 </td>
                 <td data-label="Actions" class="task-actions" onclick="event.stopPropagation()">
-                    <form action="/toggle/${task.id}" method="POST" style="display:inline;"><button class="btn-small" type="submit">Next</button></form>
-                    <form action="/delete/${task.id}" method="POST" style="display:inline;"><button class="btn-small btn-danger" type="submit">Delete</button></form>
+                    <form action="/toggle/${task.id}" method="POST" style="display:inline;">
+                        <button class="btn-small" type="submit">Next</button>
+                    </form>
+                    <form action="/delete/${task.id}" method="POST" style="display:inline;">
+                        <button class="btn-small btn-danger" type="submit">Delete</button>
+                    </form>
                 </td>
             </tr>
             <tr class="description-row">
@@ -237,6 +252,7 @@ function renderTaskList(tasks, todayStr) {
 
     taskListBody.innerHTML = html;
 }
+
 
 // small helpers (unchanged)
 function fadeOutAndRemove(element) {
