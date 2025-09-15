@@ -221,3 +221,103 @@ def clear_tasks():
     except Exception as e:
         db.session.rollback()
         return jsonify(success=False, message="An error occurred.")
+
+
+
+
+## New code we can delete if not work SMPT  From below line we ara updating the code for remainder if
+
+from flask import current_app
+from flask_mail import Message
+from app import mail   # ✅ use the global mail from __init__.py
+
+@tasks_bp.route("/send-test-email")
+def send_test_email():
+    try:
+        msg = Message(
+            subject="✅ Test Email from TaskHub",
+            recipients=["mdgulfam4588@gmail.com"],  # replace with your email
+            body="This is a test email sent from your TaskHub app via Gmail SMTP!"
+        )
+        mail.send(msg)
+        return "✅ Test email sent! Check your inbox.", 200
+    except Exception as e:
+        return f"❌ Failed to send email: {str(e)}", 500
+    
+
+@tasks_bp.route("/send-reminder/<int:task_id>")
+def send_reminder(task_id):
+    from app.models import Task, User  # import your models
+
+    task = Task.query.get_or_404(task_id)
+    user = task.owner  # assuming you have a relationship Task.owner → User
+
+    if not user or not user.email:
+        return "❌ No user/email found for this task", 400
+
+    try:
+        deadline_str = task.deadline.strftime("%d %b %Y, %I:%M %p") if task.deadline else "No deadline"
+        msg = Message(
+            subject=f"⏰ Reminder: {task.title}",
+            recipients=[user.email],  # send to the task’s owner
+            body=f"Hi {user.name},\n\nThis is a reminder for your task:\n\n"
+                 f"📝 {task.title}\n📅 Deadline: {deadline_str}\n\n"
+                 f"Please complete it on time!\n\n— TaskHub"
+        )
+        mail.send(msg)
+        return f"✅ Reminder email sent to {user.email}", 200
+    except Exception as e:
+        return f"❌ Failed to send reminder: {str(e)}", 500
+
+
+from datetime import timedelta
+from app.models import User
+
+@tasks_bp.route("/run-reminders")
+def run_reminders():
+    local_zone = ZoneInfo("Asia/Kolkata")
+    now = datetime.now(local_zone)
+    tomorrow_start = (now + timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0)
+    tomorrow_end = tomorrow_start + timedelta(days=1)
+
+    tasks = Task.query.join(User).filter(Task.deadline.isnot(None)).all()
+
+    sent_count = 0
+    for task in tasks:
+        user = task.owner
+        if not user or not user.email:
+            continue
+
+        deadline = task.deadline.astimezone(local_zone)
+
+        # --- Case 1: Tomorrow's tasks (send today at 9 AM only) ---
+        if tomorrow_start <= deadline < tomorrow_end and now.hour == 9:
+            try:
+                msg = Message(
+                    subject=f"⏰ Reminder: {task.title}",
+                    recipients=[user.email],
+                    body=f"Hi {user.name},\n\nThis is a reminder for your task tomorrow:\n\n"
+                         f"📝 {task.title}\n📅 Deadline: {deadline.strftime('%d %b %Y, %I:%M %p')}\n\n"
+                         f"Please plan ahead and be ready!\n\n— TaskHub"
+                )
+                mail.send(msg)
+                sent_count += 1
+            except Exception as e:
+                print(f"❌ Failed for {user.email}: {e}")
+
+        # --- Case 2: Urgent reminders (within 4 hours) ---
+        elif now <= deadline <= now + timedelta(hours=4):
+            try:
+                msg = Message(
+                    subject=f"🚨 Hurry Up! Task Due Soon: {task.title}",
+                    recipients=[user.email],
+                    body=f"Hi {user.name},\n\nYour task deadline is approaching soon!\n\n"
+                         f"📝 {task.title}\n📅 Deadline: {deadline.strftime('%d %b %Y, %I:%M %p')}\n\n"
+                         f"⏳ Hurry up and complete it before it’s too late!\n\n— TaskHub"
+                )
+                mail.send(msg)
+                sent_count += 1
+            except Exception as e:
+                print(f"❌ Failed for {user.email}: {e}")
+
+    return f"✅ Sent {sent_count} reminder(s).", 200

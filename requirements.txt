@@ -12,3 +12,4 @@ python-dotenv
 psycopg2-binary
 Werkzeug
 gunicorn
+Flask-Mail
